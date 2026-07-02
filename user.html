@@ -10,125 +10,132 @@
         .container { max-width: 950px; margin: auto; background: rgba(255,255,255,0.92); border-radius: 40px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #004A7C; margin-bottom: 8px; font-size: 28px; }
         .sub { text-align: center; color: #444; margin-bottom: 30px; font-size: 14px; border-bottom: 2px dashed #004A7C; padding-bottom: 12px; }
-        
-        .decade-buttons { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 25px; }
-        .decade-buttons button { background: rgba(255,255,255,0.7); color: #222; border: 2px solid #004A7C; padding: 10px 24px; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 14px; }
-        .decade-buttons button:hover { background: #004A7C; color: white; transform: scale(1.02); }
-        .decade-buttons button.active { background: #004A7C; color: white; }
-        
-        .user-list { background: rgba(255,255,255,0.6); border-radius: 28px; padding: 20px; max-height: 550px; overflow-y: auto; }
-        .user-card { border-bottom: 1px solid #ccc; padding: 14px; margin-bottom: 12px; background: white; border-radius: 20px; color: #222; }
-        .user-card:last-child { border-bottom: none; }
-        .user-card strong { color: #004A7C; }
-        .user-card .badge { background: #004A7C; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px; }
-        
+        .filter-area { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 25px; }
+        .filter-area input { padding: 10px 18px; border-radius: 40px; border: 2px solid #004A7C; font-size: 14px; min-width: 200px; background: white; }
+        .filter-area button { background: #004A7C; color: white; border: none; padding: 10px 24px; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .filter-area button:hover { background: #002f4a; transform: scale(1.02); }
+        .filter-area button.clear-btn { background: #D4818A; color: #222; }
+        .filter-area button.clear-btn:hover { background: #c06a73; }
+        .stats { background: rgba(255,255,255,0.5); padding: 12px 20px; border-radius: 40px; text-align: center; margin-bottom: 20px; font-weight: bold; color: #222; }
+        .stats span { color: #004A7C; }
+        .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; max-height: 550px; overflow-y: auto; padding: 5px; }
+        .user-card { border: 2px solid #004A7C; border-radius: 24px; padding: 18px; background: white; transition: 0.3s; }
+        .user-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,74,124,0.15); }
+        .user-card .name { color: #004A7C; font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+        .user-card .info { color: #555; font-size: 13px; line-height: 1.8; }
+        .user-card .info strong { color: #222; }
+        .user-card .badge { background: #004A7C; color: white; padding: 3px 12px; border-radius: 20px; font-size: 11px; display: inline-block; margin-top: 5px; }
+        .status { padding: 14px; border-radius: 30px; margin: 15px 0; text-align: center; font-weight: bold; }
+        .success { background: #d9f0da; color: #2a6817; border-right: 5px solid #2a6817; }
+        .error { background: #ffe0dc; color: #b33; border-right: 5px solid #b33; }
+        .loading { text-align: center; padding: 40px; color: #222; }
         .btn-home { background: #004A7C; color: white; border: none; padding: 12px 28px; border-radius: 40px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.3s; margin-top: 20px; }
         .btn-home:hover { background: #002f4a; transform: translateY(-2px); }
         .text-center { text-align: center; }
-        .loading { text-align: center; padding: 40px; color: #222; }
+        .no-result { text-align: center; padding: 40px; color: #666; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>👥 پیوند مودَّت</h1>
-    <div class="sub">لیست افراد ثبت‌نام‌شده (بدون نمایش نام و شماره)</div>
-
-    <div class="decade-buttons">
-        <button class="active" data-decade="همه">همه</button>
-        <button data-decade="دهه چهل و پنجاه">دهه چهل و پنجاه</button>
-        <button data-decade="دهه شصت">دهه شصت</button>
-        <button data-decade="دهه هفتاد">دهه هفتاد</button>
-        <button data-decade="دهه هشتاد">دهه هشتاد</button>
+    <h1>👥 لیست کاربران - پیوند مودَّت</h1>
+    <div class="sub">مشاهده اطلاعات ثبت‌نام‌کنندگان (بدون نیاز به رمز)</div>
+    <div id="messageArea"></div>
+    <div class="filter-area">
+        <input type="text" id="searchInput" placeholder="🔍 جستجو بر اساس نام، استان، شهر..." onkeyup="filterUsers()">
+        <button onclick="filterUsers()">🔍 جستجو</button>
+        <button class="clear-btn" onclick="clearSearch()">❌ پاک کردن</button>
     </div>
-
-    <div id="usersList" class="user-list">
-        <div class="loading">⏳ در حال بارگذاری اطلاعات...</div>
-    </div>
-
+    <div class="stats" id="statsArea">⏳ در حال بارگذاری...</div>
+    <div id="usersContainer"><div class="loading">⏳ در حال بارگذاری اطلاعات...</div></div>
     <div class="text-center">
         <button onclick="location.href='index.html'" class="btn-home">🏠 بازگشت به صفحه ثبت‌نام</button>
     </div>
 </div>
-
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdY-08tXjaS3DZzfb_08qkGYonqhU3T2k9Y3c9ptX7OABlHOJ5oVmnm3pl39bu1ma6/exec";
-
     let allUsers = [];
-    let currentDecade = 'همه';
 
-    async function loadFromSheet() {
+    function showMessage(msg, isError = false) {
+        const div = document.getElementById('messageArea');
+        div.innerHTML = `<div class="status ${isError ? 'error' : 'success'}">${msg}</div>`;
+        setTimeout(() => div.innerHTML = '', 5000);
+    }
+
+    async function loadUsers() {
         try {
             const res = await fetch(SCRIPT_URL);
+            if (!res.ok) throw new Error('خطا در ارتباط با سرور');
             const data = await res.json();
             allUsers = Array.isArray(data) ? data : [];
-            renderUsers(currentDecade);
+            document.getElementById('statsArea').innerHTML = `📊 تعداد کل کاربران: <span>${allUsers.length}</span> نفر`;
+            renderUsers(allUsers);
         } catch(e) {
-            document.getElementById('usersList').innerHTML = '<div class="loading">❌ خطا در ارتباط با سرور</div>';
+            document.getElementById('usersContainer').innerHTML = '<div class="error" style="padding:20px;text-align:center;">❌ خطا در بارگذاری اطلاعات. لطفاً دوباره تلاش کنید.</div>';
+            document.getElementById('statsArea').innerHTML = '❌ خطا در بارگذاری';
         }
     }
 
-    function generateAlias(index) {
-        return `پیوند مودَّت: کد ${index + 1}`;
-    }
-
-    function renderUsers(decade) {
-        const container = document.getElementById('usersList');
-        let filtered = decade === 'همه' ? allUsers : allUsers.filter(u => u.decade === decade);
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="loading">📭 هیچ کاربری در این دهه ثبت‌نام نکرده است</div>`;
+    function renderUsers(users) {
+        const container = document.getElementById('usersContainer');
+        if (users.length === 0) {
+            container.innerHTML = '<div class="no-result">📭 هیچ کاربری یافت نشد</div>';
             return;
         }
-
-        let html = '';
-        filtered.forEach((user, idx) => {
-            const alias = generateAlias(idx);
+        let html = '<div class="users-grid">';
+        users.forEach((user, index) => {
+            const genderIcon = user.gender === 'مرد' ? '👨' : user.gender === 'زن' ? '👩' : '👤';
             html += `
                 <div class="user-card">
-                    <strong>🆔 ${alias}</strong>
-                    <span class="badge">${user.decade || 'نامشخص'}</span><br>
-                    جنسیت: ${user.gender || '-'}<br>
-                    تاریخ تولد: ${user.birthYear || '-'}/${user.birthMonth || '-'}/${user.birthDay || '-'}<br>
-                    قد: ${user.height || '-'} سانتی‌متر | وزن: ${user.weight || '-'} کیلوگرم<br>
-                    شغل پدر: ${user.fatherJob || '-'} | شغل مادر: ${user.motherJob || '-'}<br>
-                    رنگ پوست: ${user.skinColor || '-'} | رنگ چشم: ${user.eyeColor || '-'}<br>
-                    نوع پوشش: ${user.dressCode || '-'}<br>
-                    شغل: ${user.jobType || '-'}<br>
-                    شرح شغل: ${(user.jobDesc || '-').substring(0,80)}<br>
-                    وضعیت جسمی: ${user.physicalStatus || '-'}<br>
-                    دخانیات: ${user.smoking || '-'}<br>
-                    تعداد خانواده: ${user.familyCount || '-'} نفر | فرزند چندم: ${user.childOrder || '-'}<br>
-                    استان: ${user.province || '-'} | شهرستان: ${user.city || '-'} | محله: ${user.neighborhood || '-'}<br>
-                    خصوصیات اخلاقی: ${(user.personality || '-').substring(0,80)}<br>
-                    معیار همسر: ${(user.spouseCriteria || '-').substring(0,120)}<br>
-                    سابقه ازدواج: ${user.marriageHistory || '-'}<br>
-                    استان‌های قابل قبول: ${user.acceptProvinces || '-'}<br>
-                    شهرهای قابل قبول: ${user.acceptCities || '-'}<br>
-                    شغل ایده‌آل همسر: ${user.spouseJobAccept || '-'}<br>
-                    ${user.freeJobDesc ? `شغل آزاد مد نظر: ${user.freeJobDesc}<br>` : ''}
-                    اختلاف سنی مطلوب: ${user.ageDiff || '-'}<br>
-                    حداقل تحصیلات همسر: ${user.minEduSpouse || '-'}<br>
-                    تحصیلات خود: ${user.selfEducation || '-'}<br>
-                    درآمد: ${user.income || '-'}<br>
-                    وضعیت دارایی: ${user.assets || '-'}<br>
-                    توضیحات: ${(user.moreInfo || '-').substring(0,80)}<br>
-                    نحوه ارتباط: ${user.contactMethod || '-'}
+                    <div class="name">${genderIcon} ${user.fullname || 'نامشخص'}</div>
+                    <div class="info">
+                        <strong>📱 آیدی ایتا:</strong> ${user.eitaaId || '-'}<br>
+                        <strong>📞 تماس:</strong> ${user.phone1 || '-'} ${user.phone2 ? '| ' + user.phone2 : ''}<br>
+                        <strong>🚻 جنسیت:</strong> ${user.gender || '-'}<br>
+                        <strong>📍 استان:</strong> ${user.province || '-'}<br>
+                        <strong>🏙️ شهرستان:</strong> ${user.city || '-'}<br>
+                        <strong>📅 تولد:</strong> ${user.birthYear}/${user.birthMonth}/${user.birthDay}<br>
+                        <strong>🎓 تحصیلات:</strong> ${user.selfEducation || '-'}<br>
+                        <strong>💼 شغل:</strong> ${user.jobType || '-'}<br>
+                        <strong>🤵 معیار همسر:</strong> ${user.spouseCriteria || '-'}<br>
+                        ${user.personality ? `<strong>💚 خصوصیات:</strong> ${user.personality}<br>` : ''}
+                        ${user.moreInfo ? `<strong>📝 توضیحات:</strong> ${user.moreInfo}<br>` : ''}
+                        <span class="badge">${user.decade || 'نامشخص'}</span>
+                        <small style="display:block;margin-top:5px;color:#999;">🕐 ${user.timestamp || ''}</small>
+                    </div>
                 </div>
             `;
         });
+        html += '</div>';
         container.innerHTML = html;
     }
 
-    document.querySelectorAll('.decade-buttons button').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.decade-buttons button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentDecade = this.dataset.decade;
-            renderUsers(currentDecade);
+    function filterUsers() {
+        const search = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (!search) {
+            renderUsers(allUsers);
+            document.getElementById('statsArea').innerHTML = `📊 تعداد کل کاربران: <span>${allUsers.length}</span> نفر`;
+            return;
+        }
+        const filtered = allUsers.filter(user => {
+            const searchable = [
+                user.fullname, user.province, user.city, user.eitaaId,
+                user.phone1, user.phone2, user.gender, user.jobType,
+                user.selfEducation, user.spouseCriteria, user.moreInfo,
+                user.personality, user.decade
+            ].join(' ').toLowerCase();
+            return searchable.includes(search);
         });
-    });
+        renderUsers(filtered);
+        document.getElementById('statsArea').innerHTML = `🔍 نتیجه جستجو: <span>${filtered.length}</span> نفر از ${allUsers.length} کاربر`;
+    }
 
-    loadFromSheet();
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        renderUsers(allUsers);
+        document.getElementById('statsArea').innerHTML = `📊 تعداد کل کاربران: <span>${allUsers.length}</span> نفر`;
+    }
+
+    loadUsers();
 </script>
 </body>
 </html>
